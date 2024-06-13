@@ -1,5 +1,6 @@
 .idea
 .env
-data/*.db
+data/*
 **/__pycache__
 
+/data/gd-pm/*
