@@ -1,8 +1,6 @@
 import re
 from pathlib import Path
 
-from session.common import PermissionException
-
 
 class BaseFile(object):
     def __init__(self, drive, token: str, name: str, doc_type: str, p_token: str):

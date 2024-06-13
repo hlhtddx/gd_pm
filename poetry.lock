@@ -42,6 +42,22 @@ url = "https://mirrors.aliyun.com/pypi/simple"
 reference = "aliyun"
 
 [[package]]
+name = "attr"
+version = "0.3.2"
+description = "Simple decorator to set attributes of target function or class in a DRY way."
+optional = false
+python-versions = "*"
+files = [
+    {file = "attr-0.3.2-py2.py3-none-any.whl", hash = "sha256:4f4bffeea8c27387bde446675a7ac24f3b8fea1075f12d849b5f5c5181fc8336"},
+    {file = "attr-0.3.2.tar.gz", hash = "sha256:1ceebca768181cdcce9827611b1d728e592be5d293911539ea3d0b0bfa1146f4"},
+]
+
+[package.source]
+type = "legacy"
+url = "https://mirrors.aliyun.com/pypi/simple"
+reference = "aliyun"
+
+[[package]]
 name = "blinker"
 version = "1.8.2"
 description = "Fast, simple object-to-object and broadcast signaling"
@@ -228,6 +244,26 @@ files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
 ]
+
+[package.source]
+type = "legacy"
+url = "https://mirrors.aliyun.com/pypi/simple"
+reference = "aliyun"
+
+[[package]]
+name = "crypto"
+version = "1.4.1"
+description = "Simple symmetric GPG file encryption and decryption"
+optional = false
+python-versions = "*"
+files = [
+    {file = "crypto-1.4.1-py2.py3-none-any.whl", hash = "sha256:985120aa86f71545388199f96a2a0e00f7ccfe5ecd14c56355eb399e1a63d164"},
+    {file = "crypto-1.4.1.tar.gz", hash = "sha256:8f2ee9756a0265c18845ac097ae447c75cfbde158abe1361b7491619f866a9bd"},
+]
+
+[package.dependencies]
+Naked = "*"
+shellescape = "*"
 
 [package.source]
 type = "legacy"
@@ -650,13 +686,13 @@ reference = "aliyun"
 
 [[package]]
 name = "lark-oapi"
-version = "1.2.7"
+version = "1.2.8"
 description = "Lark OpenAPI SDK for Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "lark-oapi-1.2.7.tar.gz", hash = "sha256:b45800fa9e1fa433a6c158e34895275798a0ad7cce881629a9a40662789e452d"},
-    {file = "lark_oapi-1.2.7-py3-none-any.whl", hash = "sha256:3619e551c746177f66f5996a2fa6f233a031d041525e62cc0de3f1c169ede576"},
+    {file = "lark-oapi-1.2.8.tar.gz", hash = "sha256:1983a642cb593a9ddc0b8e59bb4d6c50a5d6853bc70607370a4bd948fab0cb68"},
+    {file = "lark_oapi-1.2.8-py3-none-any.whl", hash = "sha256:5589d019c7b642046cd72b2478080138661b41404248459c449e16fc3ab0f05f"},
 ]
 
 [package.dependencies]
@@ -788,6 +824,26 @@ files = [
     {file = "mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8"},
     {file = "mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba"},
 ]
+
+[package.source]
+type = "legacy"
+url = "https://mirrors.aliyun.com/pypi/simple"
+reference = "aliyun"
+
+[[package]]
+name = "naked"
+version = "0.1.32"
+description = "A command line application framework"
+optional = false
+python-versions = "*"
+files = [
+    {file = "Naked-0.1.32-py2.py3-none-any.whl", hash = "sha256:ea3d7eeada6b89bd8464ba0cfaa631867aaa68a3e2d5d6a6800cbe74f8941e5f"},
+    {file = "Naked-0.1.32.tar.gz", hash = "sha256:f81015107e3aefdc801d7144fbae214bdf3cb179c0020a1dc6d5acb3659d5d5c"},
+]
+
+[package.dependencies]
+pyyaml = "*"
+requests = "*"
 
 [package.source]
 type = "legacy"
@@ -1370,6 +1426,22 @@ files = [
 [package.extras]
 docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "pyproject-hooks (!=1.1)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (>=1,<2)", "sphinx-reredirects", "sphinxcontrib-towncrier"]
 testing = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "importlib-metadata", "ini2toml[lite] (>=0.14)", "jaraco.develop (>=7.21)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "mypy (==1.9)", "packaging (>=23.2)", "pip (>=19.1)", "pyproject-hooks (!=1.1)", "pytest (>=6,!=8.1.1)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-home (>=0.5)", "pytest-mypy", "pytest-perf", "pytest-ruff (>=0.2.1)", "pytest-subprocess", "pytest-timeout", "pytest-xdist (>=3)", "tomli", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel"]
+
+[package.source]
+type = "legacy"
+url = "https://mirrors.aliyun.com/pypi/simple"
+reference = "aliyun"
+
+[[package]]
+name = "shellescape"
+version = "3.8.1"
+description = "Shell escape a string to safely use it as a token in a shell command (backport of cPython shlex.quote for Python versions 2.x & < 3.3)"
+optional = false
+python-versions = "*"
+files = [
+    {file = "shellescape-3.8.1-py2.py3-none-any.whl", hash = "sha256:f17127e390fa3f9aaa80c69c16ea73615fd9b5318fd8309c1dca6168ae7d85bf"},
+    {file = "shellescape-3.8.1.tar.gz", hash = "sha256:40b310b30479be771bf3ab28bd8d40753778488bd46ea0969ba0b35038c3ec26"},
+]
 
 [package.source]
 type = "legacy"
@@ -1989,4 +2061,4 @@ reference = "aliyun"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "fa773d358c29559d7d3644054283a52b502cb82e277001cccc498736f376d51b"
+content-hash = "fe26d0405b6a039e8f1179a86c849b5cca09f1e6bd6be8649db55357e34255f2"

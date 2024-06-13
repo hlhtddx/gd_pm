@@ -7,10 +7,12 @@ from .logger import logger
 
 
 class SqliteConfig:
-    def __init__(self, filename='data/config.db'):
-        """Init workspace using opened database"""
-        logger.debug('Init a sqlite config file', filename)
-        self.database = Database(filename)
+    def __init__(self, database:Database=None):
+        """Init workspace using an opened database"""
+        logger.debug('Init a sqlite config file: %r', database.conn)
+        if not database:
+            database = Database('data/config.db')
+        self.database = database
         self.config = self.database['config']
         if 'config' not in self.database.table_names():
             self.config.create({
@@ -21,7 +23,7 @@ class SqliteConfig:
 
     def get(self, key):  # type: (str) -> str
         """
-        retrieve storage key, value from the store, value has an expired time.(unit: second)
+        retrieve a storage key, value from the store, value has an expired time.(unit: second)
         """
         try:
             logger.debug('Get config from sqlite(key=%s)', key)
@@ -34,7 +36,7 @@ class SqliteConfig:
         except NotFoundError:
             return ''
 
-    def set(self, key, value, expire=-1):  # type: (str, str, int) -> None
+    def set(self, key: str, value: str, expire: int = -1):
         """
         storage key, value into the store, value has an expired time.(unit: second)
         """
@@ -44,19 +46,19 @@ class SqliteConfig:
         self.config.insert_all([{'key': key, 'value': value, 'expires': expire}], replace=True)
 
 
-class Store:
-    def __init__(self, prefix, config):  # type: (str, SqliteConfig) -> None
+class ConfigStore:
+    def __init__(self, prefix: str, config: SqliteConfig):
         self.prefix = prefix
         self.config = config
 
-    def get(self, key):  # type: (str) -> Tuple[bool, str]
+    def get(self, key: str):
         value = self.config.get(f'{self.prefix}.{key}')
         if value:
             return True, value
         return False, ''
 
-    def set(self, key, value, expire):  # type: (str, str, int) -> None
+    def set(self, key: str, value: str, expire: int):
         """
-        storage key, value into the store, value has an expire time.(unit: second)
+        storage key, value into the store, value has an expiry time.(unit: second)
         """
         self.config.set(f'{self.prefix}.{key}', value, expire)

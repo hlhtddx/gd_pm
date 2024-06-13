@@ -3,15 +3,15 @@ from pathlib import Path
 
 from sqlite_utils import Database
 
+from feishu.auth import Authentication
 from feishu.drive import DriveManager
-from utils import debug_level
-from utils.config import SqliteConfig
-from .common import APP_NAME, global_config, InvalidWorkspaceException, NoLoginError
-from .login import Login
+from utils import log_level
+from utils.config_store import SqliteConfig
+from .common import APP_NAME, InvalidWorkspaceException, Tenant
 
 
 class Workspace:
-    def __init__(self, path_name: str = '.', create: bool = False):
+    def __init__(self, tenant: Tenant, path_name: str, create: bool = False):
         if create:
             self.__local_path = Path(path_name).absolute()
         else:
@@ -19,13 +19,11 @@ class Workspace:
         if not self.__local_path:
             raise InvalidWorkspaceException()
         self.init_config_path()
-        self.logger = self.init_logger(filename=self.log_path, level=debug_level)
+        self.logger = self.init_logger(filename=self.log_path, level=log_level)
         self.database = Database(self.db_path)
         self.config = SqliteConfig(database=self.database)
-        self.login = self.init_login()
-        self.drive = DriveManager(workspace=self, login=self.login)
-        self.target_logins = {}
-        self.target_drive = None
+        self.auth: Authentication = self.init_auth(tenant)
+        self.drive = DriveManager(workspace=self, auth=self.auth)
 
     @property
     def path(self) -> Path:
@@ -47,10 +45,9 @@ class Workspace:
     def log_path(self) -> Path:
         return self.config_path / 'local.log'
 
-    # Initializer for config(local path, tenants info, etc.)
     @staticmethod
     def init_logger(filename, level):
-        logger = logging.getLogger("FDA")
+        logger = logging.getLogger(APP_NAME)
         logger.setLevel(level=level)
         handler = logging.FileHandler(filename)
         handler.setLevel(level=logging.DEBUG)
@@ -65,7 +62,7 @@ class Workspace:
         origin_path = Path(path_name).absolute()
         path = origin_path
         while path != path.anchor and path != Path.home():
-            config_path = path / APP_NAME
+            config_path = path
             if config_path.is_dir():
                 return path
             path = path.parent
@@ -74,34 +71,26 @@ class Workspace:
     def init_config_path(self) -> None:
         self.config_path.mkdir(exist_ok=True)
 
-    def init_login(self) -> Login or None:
-        tenant = global_config.get_tenant(self.config.get('tenant'))
-        if tenant:
-            return Login(config=self.config, tenant=tenant)
-        raise NoLoginError()
+    def init_auth(self, tenant) -> Authentication:
+        return Authentication(config=self.config, tenant=tenant)
 
     def close(self):
         self.config = None
         self.database.conn.close()
 
-    def login_to_tenant(self, tenant, force):
-        if not self.login or tenant != self.login.tenant:
-            self.login = Login(self.config, tenant)
-            self.config.set('tenant', tenant.name)
+    async def login_to_tenant(self, force):
+        if not force and await self.auth.check_login():
+            return True
+        if await self.auth.login():
+            await self.drive.on_login_complete()
 
-        if self.login.login(force):
-            pass
-            # self.drive.on_login_complete()
-
-    def logout_from_tenant(self, tenant):
-        if self.login.logout():
+    def logout_from_tenant(self):
+        if self.auth.logout():
             self.config.set('tenant', '')
 
     @property
     def is_login(self):
-        if not self.login:
-            return False
-        return self.login.is_login
+        return self.auth.is_login
 
     def find_file(self, path: Path) -> object or None:
         parent = self.find_file(path.parent)

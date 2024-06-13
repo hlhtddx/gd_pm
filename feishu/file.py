@@ -4,8 +4,8 @@
 #
 #
 # class File(BaseFile):
-#     def __init__(self, login, token, name):
-#         super().__init__(login, token, name, 'file')
+#     def __init__(self, auth, token, name):
+#         super().__init__(auth, token, name, 'file')
 #
 #     @staticmethod
 #     def get_instance(tenant, token):

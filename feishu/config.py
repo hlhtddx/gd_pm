@@ -1,3 +1,3 @@
 from typing import Tuple
-from utils.config import SqliteConfig
+from utils.config_store import SqliteConfig
 

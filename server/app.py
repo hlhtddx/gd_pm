@@ -2,8 +2,10 @@ import json
 import logging
 import os
 
+import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
+from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi.responses import (
     RedirectResponse,
 )
@@ -47,3 +49,10 @@ async def events(request: Request):
             "challenge": event.challenge
         }
     return {}
+
+
+async def run_server(server):
+    app.mount("/dash", WSGIMiddleware(server))
+    config = uvicorn.Config(app, port=5001, host='0.0.0.0', log_level="info")
+    server = uvicorn.Server(config)
+    await server.serve()

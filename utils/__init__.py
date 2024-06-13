@@ -1,1 +1,2 @@
-from .logger import logger, debug_level
+from .settings import Settings
+from .logger import logger, log_level

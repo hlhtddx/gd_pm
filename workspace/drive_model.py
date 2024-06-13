@@ -3,7 +3,9 @@ from typing import Dict
 from sqlite_utils import Database
 from sqlite_utils.db import NotFoundError
 
-from feishu.file import BaseFile, Folder, Doc, Media
+from feishu.base_file import BaseFile
+from feishu.folder import Folder
+from feishu.media import Media
 
 
 class DriveDataModel(object):
@@ -80,8 +82,8 @@ class FileMap(DriveDataModel):
 
         if doc_type == 'folder':
             file = Folder(drive=self.drive, token=token, name=name, p_token=p_token, id=id, parent_id=parent_id)
-        elif doc_type == 'doc':
-            file = Doc(drive=self.drive, token=token, name=name, create_time=create_time, edit_time=edit_time)
+        # elif doc_type == 'doc':
+        #     file = Doc(drive=self.drive, token=token, name=name, create_time=create_time, edit_time=edit_time)
         elif doc_type == 'image':
             file = Media(drive=self.drive, token=token, name=name, parent_doc=self.get_item(p_token))
         elif doc_type == 'attachment':
@@ -148,92 +150,92 @@ class FileMap(DriveDataModel):
         for file_data in self.table.rows_where(where=f'p_token="{folder.token}"', select='token'):
             folders.append(self.get_item(file_data['token']))
         return folders
-
-
-class DocInFolder(DriveDataModel):
-    def __init__(self, drive, database: Database):
-        super().__init__(drive=drive, database=database, table_name='doc_in_folder_map')
-        self.map = {}
-        self.database = database
-
-    def _create_table(self):
-        self.table.create({
-            'doc_token': str,
-            'folder_token': str,
-        }, pk=('doc_token', 'folder_token'), not_null=('doc_token', 'folder_token'))
-
-    def _create_index(self):
-        self.table.create_index(('folder_token',), if_not_exists=True)
-
-    def reset_folder(self, folder: Folder, docs: list[Doc]) -> bool:
-        if folder.token in self.map:
-            self.map.pop(folder.token)
-        self.table.delete_where('folder_token=?', [folder.token])
-
-        doc_tokens = set()
-        rows = []
-        for doc in docs:
-            doc_tokens.add(doc.token)
-            rows.append({
-                'doc_token': doc.token,
-                'folder_token': folder.token,
-            })
-        self.table.insert_all(rows, pk=('doc_token', 'folder_token'))
-        self.database.conn.commit()
-        self.map[folder.token] = doc_tokens
-        return True
-
-    def load(self):
-        for row in self.table.rows:
-            folder_token = row['folder_token']
-            doc_token = row['doc_token']
-            self._add(doc_token, folder_token)
-
-    def add_item(self, doc, folder):
-        self.table.insert(
-            {
-                'doc_token': doc.token,
-                'folder_token': folder.token,
-            },
-            pk=('doc_token', 'folder_token'), replace=True)
-        self.database.conn.commit()
-        self._add(doc.token, folder.token)
-
-    def get_folder(self, token):
-        return self.map.get(token, set())
-
-    def _add(self, doc_token: str, folder_token: str):
-        if folder_token in self.map:
-            doc_tokens = self.map[folder_token]
-        else:
-            doc_tokens = set()
-            self.map[folder_token] = doc_tokens
-        doc_tokens.add(doc_token)
-
-
-class PushedFile(DriveDataModel):
-    def __init__(self, drive, database: Database, tenant: str):
-        super().__init__(drive, database, f'pushed_file.{tenant}')
-
-    def _create_table(self):
-        self.table.create({
-            'source_token': str,
-            'target_token': str,
-            'revision': str
-        }, pk='source_token', not_null=('source_token', 'target_token'))
-
-    def _create_index(self):
-        self.table.create_index(('source_token',), if_not_exists=True)
-
-    def load(self):
-        for row in self.table.rows:
-            source_token = row['source_token']
-            target_token = row['target_token']
-            revision = row['revision']
-            self.map[source_token] = (source_token, target_token, revision)
-
-    def add_item(self, file, revision=0):
-        self.database.conn.commit()
-
-    def get_item(self, token):
-        return self.map.get(token, None)
+#
+#
+# class DocInFolder(DriveDataModel):
+#     def __init__(self, drive, database: Database):
+#         super().__init__(drive=drive, database=database, table_name='doc_in_folder_map')
+#         self.map = {}
+#         self.database = database
+#
+#     def _create_table(self):
+#         self.table.create({
+#             'doc_token': str,
+#             'folder_token': str,
+#         }, pk=('doc_token', 'folder_token'), not_null=('doc_token', 'folder_token'))
+#
+#     def _create_index(self):
+#         self.table.create_index(('folder_token',), if_not_exists=True)
+#
+#     def reset_folder(self, folder: Folder, docs: list[Doc]) -> bool:
+#         if folder.token in self.map:
+#             self.map.pop(folder.token)
+#         self.table.delete_where('folder_token=?', [folder.token])
+#
+#         doc_tokens = set()
+#         rows = []
+#         for doc in docs:
+#             doc_tokens.add(doc.token)
+#             rows.append({
+#                 'doc_token': doc.token,
+#                 'folder_token': folder.token,
+#             })
+#         self.table.insert_all(rows, pk=('doc_token', 'folder_token'))
+#         self.database.conn.commit()
+#         self.map[folder.token] = doc_tokens
+#         return True
+#
+#     def load(self):
+#         for row in self.table.rows:
+#             folder_token = row['folder_token']
+#             doc_token = row['doc_token']
+#             self._add(doc_token, folder_token)
+#
+#     def add_item(self, doc, folder):
+#         self.table.insert(
+#             {
+#                 'doc_token': doc.token,
+#                 'folder_token': folder.token,
+#             },
+#             pk=('doc_token', 'folder_token'), replace=True)
+#         self.database.conn.commit()
+#         self._add(doc.token, folder.token)
+#
+#     def get_folder(self, token):
+#         return self.map.get(token, set())
+#
+#     def _add(self, doc_token: str, folder_token: str):
+#         if folder_token in self.map:
+#             doc_tokens = self.map[folder_token]
+#         else:
+#             doc_tokens = set()
+#             self.map[folder_token] = doc_tokens
+#         doc_tokens.add(doc_token)
+#
+#
+# class PushedFile(DriveDataModel):
+#     def __init__(self, drive, database: Database, tenant: str):
+#         super().__init__(drive, database, f'pushed_file.{tenant}')
+#
+#     def _create_table(self):
+#         self.table.create({
+#             'source_token': str,
+#             'target_token': str,
+#             'revision': str
+#         }, pk='source_token', not_null=('source_token', 'target_token'))
+#
+#     def _create_index(self):
+#         self.table.create_index(('source_token',), if_not_exists=True)
+#
+#     def load(self):
+#         for row in self.table.rows:
+#             source_token = row['source_token']
+#             target_token = row['target_token']
+#             revision = row['revision']
+#             self.map[source_token] = (source_token, target_token, revision)
+#
+#     def add_item(self, file, revision=0):
+#         self.database.conn.commit()
+#
+#     def get_item(self, token):
+#         return self.map.get(token, None)

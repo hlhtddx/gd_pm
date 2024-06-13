@@ -4,33 +4,52 @@ import webbrowser
 from typing import Dict
 from urllib.parse import urlencode
 
-from lark_oapi.api.authen.v1 import CreateOidcAccessTokenRequestBodyBuilder, CreateOidcAccessTokenRequestBuilder, \
-    CreateOidcRefreshAccessTokenRequestBodyBuilder, \
-    CreateOidcRefreshAccessTokenRequestBuilder, CreateOidcRefreshAccessTokenResponse, \
-    CreateAccessTokenResponseBody, CreateOidcRefreshAccessTokenResponseBody
+from lark_oapi.api.authen.v1 import (
+    CreateOidcAccessTokenRequestBodyBuilder,
+    CreateOidcAccessTokenRequestBuilder,
+    CreateOidcRefreshAccessTokenRequestBodyBuilder,
+    CreateOidcRefreshAccessTokenRequestBuilder,
+    CreateOidcRefreshAccessTokenResponse,
+    CreateAccessTokenResponseBody,
+    CreateOidcRefreshAccessTokenResponseBody
+)
 
-from session.client import client
-from utils import logger
+from feishu.client import client
+from utils import logger, Settings
+from utils.config_store import ConfigStore
+
+if Settings.DEBUG:
+    REFRESH_INTERVAL = 30
+else:
+    REFRESH_INTERVAL = 600
 
 
 class Authentication:
     auth_queue: Dict[str, 'Authentication'] = {}
 
-    def __init__(self, login):
-        self.tenant = login.tenant
-        self.store = login.store
-        self.config = login.config
+    def __init__(self, tenant, config):
+        self.tenant = tenant
+        self.config = config
+        self.store = ConfigStore(prefix=tenant, config=config)
         self.code_returned = ''
-        self.is_login = False
+        self._access_token: str = ''
+        self._expires_in: int = -1
         self.event = asyncio.Event()
 
-    def _store_user_access_token(self,
-                                 user_token_info: CreateAccessTokenResponseBody | CreateOidcRefreshAccessTokenResponseBody) -> None:
-        """Store access token to config store"""
+    @property
+    def is_login(self):
+        return self._access_token and self._expires_in > time.time()
+
+    def _store_user_access_token(
+            self,
+            user_token_info: CreateAccessTokenResponseBody | CreateOidcRefreshAccessTokenResponseBody
+    ) -> None:
+        """ConfigStore access token to config store"""
         self.store.set('user_access_token', user_token_info.access_token, user_token_info.expires_in)
         self.store.set('refresh_token', user_token_info.refresh_token, user_token_info.refresh_expires_in)
         self.schedule_refresh_task = asyncio.create_task(self.timer_to_refresh_token(user_token_info.expires_in - 1800))
-        self.is_login = True
+        self._access_token = user_token_info.access_token
+        self._expires_in = user_token_info.refresh_expires_in + time.time()
 
     async def _retrieve_token(self, code) -> bool:
         """Retrieve access token from challenge code"""
@@ -46,9 +65,9 @@ class Authentication:
 
     async def wait_for_login(self):
         self.auth_queue[self.tenant.name] = self
-        logger.info('Wait for login')
+        logger.info('Wait for auth')
         await self.event.wait()
-        logger.info('Wait for login done')
+        logger.info('Wait for auth done')
 
     @staticmethod
     def on_login_success(name, code):
@@ -58,7 +77,7 @@ class Authentication:
             logger.error('No queued auth session found')
             return
         auth.code_returned = code
-        logger.info('Set event for login, code=%s', code)
+        logger.info('Set event for auth, code=%s', code)
         auth.event.set()
 
     async def _launch_login_url(self) -> None:
@@ -80,21 +99,18 @@ class Authentication:
         if user_access_token:
             return user_access_token
 
-        self.is_login = False
         return ''
 
     async def login(self) -> bool:
-        self.is_login = False
         self.code_returned = ''
         await self._launch_login_url()
         if self.code_returned:
             logger.info('Get code')
             await self._retrieve_token(self.code_returned)
-            logger.info('login done')
+            logger.info('auth done')
         return self.is_login
 
     def logout(self) -> None:
-        self.is_login = False
         self.store.set('user_access_token', '', -1)
         self.store.set('refresh_token', '', -1)
 
@@ -103,7 +119,6 @@ class Authentication:
 
     async def refresh_token(self) -> str:
         """Refresh access token"""
-
         logger.debug('To refresh token')
         result, refresh_token = self.store.get('refresh_token')
         if not refresh_token:
@@ -122,5 +137,6 @@ class Authentication:
     async def timer_to_refresh_token(self, elapsed_time):
         end = time.time() + elapsed_time
         while time.time() < end:
-            await asyncio.sleep(900)
+            logger.debug('Slept for %d s', REFRESH_INTERVAL)
+            await asyncio.sleep(REFRESH_INTERVAL)
         await self.refresh_token()
