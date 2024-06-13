@@ -2,7 +2,6 @@ import json
 import logging
 import os
 
-import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.responses import (
@@ -16,12 +15,6 @@ from utils.cipher import AESCipher
 load_dotenv()
 app = FastAPI()
 cipher = AESCipher(os.getenv('ENCRYPT_KEY'))
-
-
-async def start_server():
-    config = uvicorn.Config(app, port=5001, host='0.0.0.0', log_level="info")
-    server = uvicorn.Server(config)
-    await server.serve()
 
 
 @app.get("/")
@@ -40,7 +33,7 @@ async def login_success(code: str, state: str):
     logging.info('code, %s', code)
     logging.info('state, %s', state)
     Authentication.on_login_success(state, code)
-    return RedirectResponse('/')
+    return RedirectResponse('/dash')
 
 
 @app.post("/feishu/events")
