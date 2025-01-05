@@ -6,7 +6,7 @@ authors = ["Frank Zhang <frankzhang123@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.10"
 fastapi = "^0.111.0"
 uvicorn = "^0.30.1"
 pycryptodome = "^3.20.0"
@@ -23,8 +23,8 @@ url = "https://mirrors.aliyun.com/pypi/simple/"
 priority = "primary"
 
 [[tool.poetry.source]]
-name = "tsinghua"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+name = "huawei"
+url = "https://repo.huaweicloud.com/repository/pypi/simple"
 priority = "primary"
 
 [build-system]
